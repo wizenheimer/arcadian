@@ -1,0 +1,79 @@
+version: "3.8"
+
+services:
+  django:
+    build: .
+    container_name: django
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/usr/src/app/
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - DJANGO_SECRET_KEY=django-insecure-xn@p=judr6u4jbghy6hf-_=)x)19mq400a8!tl^(ca1o*4x4rf
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - pgdb
+      - redis
+      - elasticsearch
+    networks:
+      - elastic
+  elasticsearch:
+    image: elasticsearch:7.14.0
+    volumes:
+      - ./data/elastic:/var/lib/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+    ports:
+      - 9200:9200
+    networks:
+      - elastic
+  celery:
+    build: .
+    command: celery -A core worker -l INFO
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - DEBUG=1
+      - DJANGO_SECRET_KEY=django-insecure-xn@p=judr6u4jbghy6hf-_=)x)19mq400a8!tl^(ca1o*4x4rf
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - django
+      - redis
+  celery-beat:
+    build: .
+    command: celery -A core beat -l INFO
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - DEBUG=1
+      - DJANGO_SECRET_KEY=django-insecure-xn@p=judr6u4jbghy6hf-_=)x)19mq400a8!tl^(ca1o*4x4rf
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - django
+      - redis
+  pgdb:
+    image: postgres
+    container_name: pgdb
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+  redis:
+    image: "redis:alpine"
+
+volumes:
+  pgdata:
+  
+networks:
+  elastic:
+    driver: bridge
