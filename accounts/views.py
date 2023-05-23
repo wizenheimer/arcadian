@@ -19,7 +19,7 @@ from django.urls import reverse
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from rest_framework.exceptions import ValidationError
-from yaml import serialize
+from rest_framework.decorators import action
 from accounts.serializers import (
     RegisterSerializer,
     LoginSerializer,
@@ -28,7 +28,8 @@ from accounts.serializers import (
     AccountSerializer,
     WorkspaceSerializer,
 )
-from accounts.models import User, Workspace
+from accounts.models import User, Workspace, WorkspaceAssignment
+import accounts.invites as invite
 
 
 class AccountViewset(viewsets.ReadOnlyModelViewSet):
@@ -36,9 +37,164 @@ class AccountViewset(viewsets.ReadOnlyModelViewSet):
     serializer_class = AccountSerializer
 
 
-class WorkspaceViewset(viewsets.ReadOnlyModelViewSet):
+class WorkspaceViewset(viewsets.ModelViewSet):
     queryset = Workspace.objects.all()
     serializer_class = WorkspaceSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return user.workspace.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        user = self.request.user
+        workspace = serializer.instance
+        assignment = WorkspaceAssignment(workspace=workspace, user=user, is_admin=True)
+        assignment.is_admin = True
+        assignment.save()
+        content = {
+            "message": "created a new workspace",
+            "pk": serializer.instance.pk,
+        }
+        return Response(
+            content=content,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=True, methods=["post", "get"])
+    def invite(self, request, pk=None):
+        if request.method == "POST":
+            workspace = get_object_or_404(Workspace, pk=pk)
+            user = request.user
+            if not workspace.users.filter(id=user.id).exists():
+                return Response(
+                    {
+                        "error": "You are not authorized to send invites for this workspace"
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
+            assignment = WorkspaceAssignment.objects.get(workspace=workspace, user=user)
+
+            if not assignment.is_admin:
+                return Response(
+                    {
+                        "error": "You are not authorized to send invites for this workspace"
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
+            email = self.request.data.get("email")
+            if email is None:
+                return Response(
+                    {"error": "Email is required for generating an invite"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            User.objects.get_or_create(email=email)
+
+            absurl = invite.get_invite_url(request, user.id, workspace.id, email)
+
+            # Console Backend won't work without this.
+            send_mail(
+                subject="You've been invited to the workspace🥳",
+                message=f"Get Started:{absurl}",
+                from_email="djangomailer@mail.com",
+                recipient_list=[
+                    email,
+                ],
+            )
+
+            return Response(
+                {"message": "Invite shared successfully."}, status=status.HTTP_200_OK
+            )
+        else:
+            workspace = self.request.query_params.get("workspace", None)
+            sender = self.request.query_params.get("from", None)
+            email = self.request.query_params.get("to", None)
+
+            data = invite.decode_absurl(workspace, sender, email)
+
+            workspace_id = data["workspace_id"]
+            sender_id = data["sender_id"]
+            email_id = data["email_id"]
+
+            user = User.objects.get(email=email_id)
+            workspace = Workspace.objects.get(id=workspace_id)
+
+            assignment = WorkspaceAssignment(user=user, workspace=workspace)
+            # TODO: set counterparty parameter during invite
+            # TODO: prepare more roles for counterparty
+            assignment.is_member = True
+            assignment.save()
+
+            return Response({"message": "Invited to the Workspace", "pk": workspace_id})
+
+    @action(detail=True, methods=["post"])
+    def assign_role(self, request, pk=None):
+        workspace = get_object_or_404(Workspace, pk=pk)
+        user = request.user
+        assign_to = self.request.data.get("assign_to")
+        assign_user = get_object_or_404(User, email=assign_to)
+        assign_role = self.request.data.get("assign_role")
+        remove_role = self.request.data.get("remove_role")
+
+        roles = [
+            "admin",
+            "billing",
+            "manager",
+            "member",
+            "counterparty",
+        ]
+        if assign_role and remove_role:
+            return Response(
+                {"error": "Grant parameters missing."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if assign_role not in roles:
+            return Response(
+                {"error": "Grant parameters missing."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not workspace.users.filter(id=user.id).exists():
+            return Response(
+                {"error": "You are not authorized to change roles for this workspace."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        assignment = WorkspaceAssignment.objects.get(workspace=workspace, user=user)
+
+        if not assignment.is_admin:
+            return Response(
+                {"error": "You are not authorized to change roles for this workspace."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        assignment = WorkspaceAssignment.objects.get(
+            workspace=workspace, user=assign_user
+        )
+
+        if assign_role == "admin":
+            assignment.is_admin = True
+        elif assign_role == "billing":
+            assignment.is_billing = True
+        elif assign_role == "manager":
+            assignment.is_manager = True
+        elif assign_role == "member":
+            assignment.is_member = True
+        elif assign_role == "counterparty":
+            assignment.is_counterparty = True
+
+        assignment.save()
+
+        return Response(
+            {"message": "Permission changed successfully."},
+            status=status.HTTP_200_OK,
+        )
 
 
 class RegistrationView(GenericAPIView):

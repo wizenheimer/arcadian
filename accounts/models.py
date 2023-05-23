@@ -1,3 +1,5 @@
+from random import choice
+from string import ascii_uppercase
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -15,8 +17,24 @@ class Workspace(models.Model):
     description = models.TextField()
 
     # metadata
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    # token for creating invites
+    token = models.CharField(max_length=255, db_index=True, null=True, blank=True)
+
+    def update_token(self):
+        # update token for the given model
+        self.token = "".join(choice(ascii_uppercase) for i in range(16))
+        return self.token
+
+    def get_token(self):
+        return self.token
+
+    def save(self, *args, **kwargs):
+        # create a new token
+        token = self.update_token()
+        super(Workspace, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.title

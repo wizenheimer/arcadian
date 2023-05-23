@@ -19,12 +19,12 @@ router = DefaultRouter()
 router.register(
     r"account",
     AccountViewset,
-    basename="account-viewset",
+    basename="account",
 )
 router.register(
     r"workspace",
     WorkspaceViewset,
-    basename="workspace-viewset",
+    basename="workspace",
 )
 
 urlpatterns = [
