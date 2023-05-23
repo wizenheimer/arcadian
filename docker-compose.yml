@@ -12,15 +12,21 @@ services:
     environment:
       - DEBUG=1
       - DJANGO_SECRET_KEY=django-insecure-xn@p=judr6u4jbghy6hf-_=)x)19mq400a8!tl^(ca1o*4x4rf
-      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,[::1],pgdb
       - CELERY_BROKER=redis://redis:6379/0
       - CELERY_BACKEND=redis://redis:6379/0
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST=pgdb
+      - POSTGRES_PORT=5432
     depends_on:
       - pgdb
       - redis
       - elasticsearch
     networks:
-      - elastic
+      - pharaoh
+
   elasticsearch:
     image: elasticsearch:7.14.0
     volumes:
@@ -30,7 +36,8 @@ services:
     ports:
       - 9200:9200
     networks:
-      - elastic
+      - pharaoh
+
   celery:
     build: .
     command: celery -A core worker -l INFO
@@ -39,12 +46,15 @@ services:
     environment:
       - DEBUG=1
       - DJANGO_SECRET_KEY=django-insecure-xn@p=judr6u4jbghy6hf-_=)x)19mq400a8!tl^(ca1o*4x4rf
-      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,[::1],pgdb
       - CELERY_BROKER=redis://redis:6379/0
       - CELERY_BACKEND=redis://redis:6379/0
     depends_on:
       - django
       - redis
+    networks:
+      - pharaoh
+
   celery-beat:
     build: .
     command: celery -A core beat -l INFO
@@ -53,12 +63,15 @@ services:
     environment:
       - DEBUG=1
       - DJANGO_SECRET_KEY=django-insecure-xn@p=judr6u4jbghy6hf-_=)x)19mq400a8!tl^(ca1o*4x4rf
-      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,[::1],pgdb
       - CELERY_BROKER=redis://redis:6379/0
       - CELERY_BACKEND=redis://redis:6379/0
     depends_on:
       - django
       - redis
+    networks:
+      - pharaoh
+
   pgdb:
     image: postgres
     container_name: pgdb
@@ -66,14 +79,21 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST=pgdb
+      - POSTGRES_PORT=5432
+      - "POSTGRES_HOST_AUTH_METHOD=trust"
     volumes:
       - pgdata:/var/lib/postgresql/data/
+    networks:
+      - pharaoh
+
   redis:
     image: "redis:alpine"
 
 volumes:
   pgdata:
-  
+
+
 networks:
-  elastic:
+  pharaoh:
     driver: bridge
