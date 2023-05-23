@@ -3,7 +3,23 @@ from django.contrib.auth.models import AbstractUser
 from accounts.managers import UserManager
 
 
+class Workspace(models.Model):
+    """
+    Workspace models represent the user collective
+    """
+
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+
+    def __str__(self):
+        return self.title
+
+
 class User(AbstractUser):
+    """
+    Custom user models
+    """
+
     username = None
     email = models.EmailField(unique=True, db_index=True)
     # has verified email address
@@ -21,3 +37,11 @@ class User(AbstractUser):
 
     def __str__(self):
         return str(self.email)
+
+
+class WorkspaceAssignment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return super().id
