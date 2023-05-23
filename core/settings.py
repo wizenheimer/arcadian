@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
-from re import template
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,8 +39,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # 3rd party libraries
-    # 'rest_framework',
-    # 'django_celery_results',
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "django_celery_results",
     "django_elasticsearch_dsl",
     "django_elasticsearch_dsl_drf",
     # local libraries
@@ -143,4 +144,14 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
 
 ELASTICSEARCH_DSL = {
     "default": {"hosts": "elasticsearch:9200"},
+}
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=600),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=5),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": False,
 }
