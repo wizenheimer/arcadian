@@ -41,9 +41,10 @@ class WorkspaceViewset(viewsets.ModelViewSet):
     queryset = Workspace.objects.all()
     serializer_class = WorkspaceSerializer
 
-    def get_queryset(self):
-        user = self.request.user
-        return user.workspace.all()
+    # TODO:
+    # def get_queryset(self):
+    #     user = self.request.user
+    #     return user.workspace.all()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

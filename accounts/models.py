@@ -59,6 +59,8 @@ class User(AbstractUser):
         Workspace,
         related_name="users",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
 
     USERNAME_FIELD = "email"

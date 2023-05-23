@@ -5,7 +5,10 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str
 from django.utils.http import urlsafe_base64_decode
+from yaml import serialize
 from accounts.models import User, Workspace
+from assets.serializers import DataRepositorySerializer, DataSourceSerializer
+from assets.models import DataRepository, DataSource
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -100,6 +103,8 @@ class GeneratePasswordResetToken(serializers.Serializer):
 class WorkspaceSerializer(serializers.ModelSerializer):
     total_members = serializers.SerializerMethodField("member_count")
     workspace_id = serializers.IntegerField(source="id")
+    repository = serializers.SerializerMethodField()
+    sources = serializers.SerializerMethodField()
 
     class Meta:
         model = Workspace
@@ -108,10 +113,22 @@ class WorkspaceSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "total_members",
+            "repository",
+            "sources",
         )
 
     def member_count(self, instance):
         return instance.users.count()
+
+    def get_repository(self, workspace):
+        repositories = workspace.repositories.all()
+        serializer = DataRepositorySerializer(repositories, many=True)
+        return serializer.data
+
+    def get_sources(self, workspace):
+        sources = workspace.datasources.all()
+        serializers = DataSourceSerializer(sources, many=True)
+        return serializers.data
 
 
 class AccountSerializer(serializers.ModelSerializer):
