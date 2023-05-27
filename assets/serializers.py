@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from rest_framework.fields import empty
+from django.core.exceptions import ValidationError
+from assets.validators import validate_api_key
 from assets.models import DataSource, DataRepository, Folder, File
 
 # TODO: build hieraries from data sources
@@ -15,6 +16,14 @@ class DataSourceSerializer(serializers.ModelSerializer):
             "key",
             "workspace",
         )
+
+    def validate(self, attrs):
+        source = attrs.get("source", None)
+        if source is not "Self Reported":
+            key = attrs.get("key", None)
+            if not validate_api_key(api_key=key, agent="stripe"):
+                raise ValidationError("The API key is invalid or unauthorized")
+        return super().validate(attrs)
 
 
 class BaseFileSerializer(serializers.ModelSerializer):
@@ -54,6 +63,7 @@ class BaseFolderSerializer(serializers.ModelSerializer):
 
 
 class VerboseFolderSerializer(BaseFolderSerializer):
+    tags = serializers.SerializerMethodField()
     files = VerboseFileSerializer(
         many=True,
         read_only=True,
@@ -71,6 +81,10 @@ class VerboseFolderSerializer(BaseFolderSerializer):
         subfolders = Folder.objects.filter(parent=folder)
         serializer = self.__class__(subfolders, many=True)
         return serializer.data
+
+    def get_tags(self, folder):
+        tags = folder.tags.all()
+        return tags.values("title")
 
 
 class BaseDataRepositorySerializer(serializers.ModelSerializer):

@@ -1,5 +1,17 @@
 from django.db import models
+from django_cryptography.fields import encrypt
 from accounts.models import Workspace
+
+
+class Tag(models.Model):
+    """
+    Tagging functionality for Resources
+    """
+
+    title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.title
 
 
 class DataSource(models.Model):
@@ -22,10 +34,12 @@ class DataSource(models.Model):
         default="Self Reported",
     )
     # TODO: add validators for this field
-    key = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
+    key = encrypt(
+        models.CharField(
+            max_length=255,
+            null=True,
+            blank=True,
+        )
     )
     # TODO: add utils for this field
     # if key is verified
@@ -86,6 +100,14 @@ class Folder(models.Model):
         on_delete=models.CASCADE,
         related_name="children",
     )
+    # assign tags to the folder
+    tags = models.ManyToManyField(
+        Tag,
+        through="TagAssignment",
+        blank=True,
+        null=True,
+        related_name="folders",
+    )
 
     def __str__(self):
         return self.name
@@ -109,3 +131,19 @@ class File(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class TagAssignment(models.Model):
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        related_name="assignment",
+    )
+    folder = models.ForeignKey(
+        Folder,
+        on_delete=models.CASCADE,
+        related_name="assignment",
+    )
+
+    def __str__(self):
+        return f"{self.id}"
