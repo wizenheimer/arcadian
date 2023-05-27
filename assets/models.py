@@ -100,6 +100,7 @@ class File(models.Model):
     # TODO: add S3 file fields here
 
     name = models.CharField(max_length=255)
+    # folder the file belongs to
     folder = models.ForeignKey(
         Folder,
         on_delete=models.CASCADE,

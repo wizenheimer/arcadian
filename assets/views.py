@@ -1,10 +1,13 @@
 from rest_framework import viewsets
 from assets.models import DataSource, DataRepository, Folder, File
 from assets.serializers import (
-    DataRepositorySerializer,
+    VerboseDataRepositorySerializer,
+    BaseDataRepositorySerializer,
     DataSourceSerializer,
-    FolderSerializer,
-    FileSerializer,
+    BaseFolderSerializer,
+    VerboseFolderSerializer,
+    BaseFileSerializer,
+    VerboseFileSerializer,
 )
 
 
@@ -15,14 +18,41 @@ class DataSourceViewset(viewsets.ModelViewSet):
 
 class DataRepositoryViewset(viewsets.ModelViewSet):
     queryset = DataRepository.objects.all()
-    serializer_class = DataRepositorySerializer
+    serializer_class = BaseDataRepositorySerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return VerboseDataRepositorySerializer
+
+        if self.request.GET.get("verbose", "false") == "false":
+            return BaseDataRepositorySerializer
+        else:
+            return VerboseDataRepositorySerializer
 
 
 class FolderViewset(viewsets.ModelViewSet):
     queryset = Folder.objects.all()
-    serializer_class = FolderSerializer
+    serializer_class = BaseFolderSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return VerboseFolderSerializer
+
+        if self.request.GET.get("verbose", "false") == "false":
+            return BaseFolderSerializer
+        else:
+            return VerboseFolderSerializer
 
 
 class FileViewset(viewsets.ModelViewSet):
     queryset = File.objects.all()
-    serializer_class = FileSerializer
+    serializer_class = BaseFileSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return VerboseFileSerializer
+
+        if self.request.GET.get("verbose", "false") == "false":
+            return BaseFileSerializer
+        else:
+            return VerboseFileSerializer
