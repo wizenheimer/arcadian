@@ -53,8 +53,16 @@ class DataSource(models.Model):
         on_delete=models.CASCADE,
     )
     # metadata
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        null=True,
+        blank=True,
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return f"{self.id}"
@@ -73,8 +81,19 @@ class DataRepository(models.Model):
         on_delete=models.CASCADE,
     )
     # metadata
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        null=True,
+        blank=True,
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name_plural = "Data Repositories"
 
     def __str__(self):
         return f"{self.id}"
@@ -105,7 +124,6 @@ class Folder(models.Model):
         Tag,
         through="TagAssignment",
         blank=True,
-        null=True,
         related_name="folders",
     )
 
@@ -128,6 +146,17 @@ class File(models.Model):
         on_delete=models.CASCADE,
         related_name="files",
     )
+    # TODO: add validators and mimetype here
+    content = models.FileField(
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        null=True,
+        blank=True,
+    )
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
         return self.name

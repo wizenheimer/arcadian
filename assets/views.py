@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, parsers
 from assets.models import DataSource, DataRepository, Folder, File
 from assets.serializers import (
     VerboseDataRepositorySerializer,
@@ -47,6 +47,10 @@ class FolderViewset(viewsets.ModelViewSet):
 class FileViewset(viewsets.ModelViewSet):
     queryset = File.objects.all()
     serializer_class = BaseFileSerializer
+    parser_classes = [
+        parsers.MultiPartParser,
+        parsers.FormParser,
+    ]
 
     def get_serializer_class(self):
         if self.request.method == "POST":

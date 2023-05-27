@@ -32,6 +32,7 @@ class BaseFileSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
+            "content",
         )
 
 
