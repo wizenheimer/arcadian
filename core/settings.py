@@ -46,9 +46,18 @@ INSTALLED_APPS = [
     "django_elasticsearch_dsl_drf",
     "storages",
     # local libraries
+    # handles account related features
     "accounts",
+    # handles workspace artefacts
     "assets",
+    # handles workspace metrics
     "metrics",
+    # handles workspace agents
+    "agents",
+    # handles workspace conversations
+    "converse",
+    # handles workspace subscriptions
+    "subscription",
 ]
 
 MIDDLEWARE = [

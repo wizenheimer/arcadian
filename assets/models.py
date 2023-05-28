@@ -42,7 +42,7 @@ class DataSource(models.Model):
         )
     )
     # TODO: add utils for this field
-    # if key is verified
+    # if key is verified for read operations
     is_verified = models.BooleanField(
         default=False,
     )
