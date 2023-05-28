@@ -99,6 +99,40 @@ def query_customer_data(api_key, data):
 def fetch_data(datasource_id):
     """
     Fetch data associated with a given source
+    {
+        '2023-05': 
+            {
+                'all subscription': 200, 
+                'active subscription': 200, 
+                'trial subscription': 0, 
+                'canceled subscription': 0, 
+                'monthly recurring revenue': 10372.760000000004, 
+                'total revenue': 10372.760000000004, 
+                'user churn': 0, 
+                'revenue churn': 0, 
+                'annual recurring revenue': 124473.12000000005, 
+                'total customers': 519, 
+                'arpu': 19.947615384615393, 
+                'active customers': 520, 
+                'timestamp': '2023-05-22 21:19:10.709702'
+            },
+        '2023-06': 
+            {
+                'all subscription': 200, 
+                'active subscription': 200, 
+                'trial subscription': 0, 
+                'canceled subscription': 0, 
+                'monthly recurring revenue': 10372.760000000004, 
+                'total revenue': 10372.760000000004, 
+                'user churn': 0, 
+                'revenue churn': 0, 
+                'annual recurring revenue': 124473.12000000005, 
+                'total customers': 519, 
+                'arpu': 19.947615384615393, 
+                'active customers': 520, 
+                'timestamp': '2023-05-22 21:19:10.709702'
+            },
+    }
     """
     datasource = DataSource.objects.get(id=datasource_id)
     api_key = datasource.api_key
