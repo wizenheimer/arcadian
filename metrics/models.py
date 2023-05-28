@@ -1,5 +1,26 @@
+from random import choices
+from typing import Collection
 from django.db import models
 from assets.models import DataSource
+
+
+class MetricCollection(models.Model):
+    """A model for grouping metrics together"""
+
+    COLLECTION_TYPE = (
+        ("Customer Metrics", "Customer Metrics"),
+        ("Subscription Metrics", "Subscription Metrics"),
+        ("Revenue Metrics", "Revenue Metrics"),
+        ("Churn Metrics", "Churn Metrics"),
+    )
+
+    collection_type = models.CharField(
+        max_length=255,
+        choices=COLLECTION_TYPE,
+    )
+
+    def __str__(self):
+        return self.collection_type
 
 
 class Metric(models.Model):
@@ -23,11 +44,13 @@ class Metric(models.Model):
         ("churn/user", "churn/user"),
         ("churn/revenue", "churn/revenue"),
     )
+
     metric_type = models.CharField(
         max_length=255,
         choices=METRIC_TYPE,
     )
-    # holds the month + year
+    # holds the day + month
+    # currentDay = datetime.now().day
     # currentMonth = datetime.now().month
     # currentYear = datetime.now().year
     time = models.CharField(
@@ -40,6 +63,13 @@ class Metric(models.Model):
     )
     source = models.ForeignKey(
         DataSource,
+        related_name="metrics",
+        on_delete=models.CASCADE,
+    )
+    collection = models.ForeignKey(
+        MetricCollection,
+        null=True,
+        blank=True,
         related_name="metrics",
         on_delete=models.CASCADE,
     )

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     # local libraries
     "accounts",
     "assets",
+    "metrics",
 ]
 
 MIDDLEWARE = [

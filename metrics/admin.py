@@ -1,3 +1,3 @@
-from django.contrib import admin
+from core.util import add_to_admin
 
-# Register your models here.
+add_to_admin("metrics")
