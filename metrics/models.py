@@ -54,7 +54,6 @@ class Metric(models.Model):
     # currentMonth = datetime.now().month
     # currentYear = datetime.now().year
     time = models.CharField(
-        index=True,
         max_length=4,
     )
     data = models.DecimalField(
