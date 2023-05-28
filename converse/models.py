@@ -1,5 +1,6 @@
 from django.db import models
 from accounts.models import User
+from agents.models import Agents
 
 
 class Conversation(models.Model):
@@ -15,6 +16,12 @@ class Conversation(models.Model):
         User,
         on_delete=models.CASCADE,
     )
+    agent = models.ForeignKey(
+        Agents,
+        on_delete=models.CASCADE,
+    )
+    # TODO: link the conversation to the document
+    # TODO: remove these fields, doesn't seem necessary
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     # determines whether the conversation should be marked as favorite
