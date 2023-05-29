@@ -57,8 +57,8 @@ class Metric(models.Model):
         max_length=4,
     )
     data = models.DecimalField(
-        max_digits=9,
-        max_length=12,
+        decimal_places=10,
+        max_digits=20,
     )
     source = models.ForeignKey(
         DataSource,
