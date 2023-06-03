@@ -8,6 +8,6 @@ class ConversationViewset(viewsets.ReadOnlyModelViewSet):
     serializer_class = ConversationSerializer
 
 
-class MessageViewset(viewsets.ReadOnlyModelViewSet):
+class MessageViewset(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer

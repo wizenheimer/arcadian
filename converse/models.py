@@ -1,6 +1,10 @@
+import tiktoken
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 from accounts.models import User
 from agents.models import Agents
+from assets.models import File
 
 
 class Conversation(models.Model):
@@ -8,6 +12,12 @@ class Conversation(models.Model):
     Model representing a conversation
     """
 
+    STATE = (
+        ("active", "active"),
+        ("archive", "archive"),
+        ("favourite", "favourite"),
+    )
+    # TODO: gpt3.5 model for summarizing conversation
     title = models.CharField(
         max_length=255,
         default="New Conversation",
@@ -20,27 +30,26 @@ class Conversation(models.Model):
         Agents,
         on_delete=models.CASCADE,
     )
-    # TODO: link the conversation to the document
-    # TODO: remove these fields, doesn't seem necessary
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    # determines whether the conversation should be marked as favorite
-    favourite = models.BooleanField(default=False)
-    # determines whether conversation is active or archived
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = [
-            "created_at",
-        ]
+    document = models.ForeignKey(
+        File,
+        on_delete=models.CASCADE,
+    )
+    # determines whether the conversation should be marked as favorite, active or archived
+    conversation_state = models.CharField(
+        max_length=255,
+        choices=STATE,
+        default="active",
+    )
 
     def __str__(self):
         return f"{self.id}"
 
 
 class Message(models.Model):
-    # TODO: generic foreign key pointing to the creator: User or Agent
-    # from = blahh blahh blahh
+    """
+    Model representing the message associated with a conversation
+    """
+
     conversation = models.ForeignKey(
         Conversation,
         on_delete=models.CASCADE,
@@ -57,9 +66,27 @@ class Message(models.Model):
         on_delete=models.SET_NULL,
         related_name="replies",
     )
+    # Generic foreign key pointing to the message sender: User or Agent
+    sender_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+    )
+    sender_id = models.PositiveIntegerField()
+    sender = GenericForeignKey("sender_type", "sender_id")
 
     class Meta:
         ordering = ["-created_at"]
+
+    def calculate_token(self):
+        """
+        Calculates the token for the message
+        """
+        conversation = self.conversation
+        agent = conversation.agent.all()[0]
+        model_type = agent.embedding_model_type
+        encoding = tiktoken.encoding_for_model(model_type)
+        num_tokens = len(encoding.encode(self.content))
+        return num_tokens
 
     def __str__(self):
         return f"{self.id}"

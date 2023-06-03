@@ -95,6 +95,7 @@ srsly==2.4.6
 stripe==5.4.0
 tenacity==8.2.2
 thinc==8.1.10
+tiktoken==0.4.0
 tldextract==3.4.4
 tqdm==4.65.0
 typer==0.7.0
