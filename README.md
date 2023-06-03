@@ -7,8 +7,8 @@
 [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/compatibility-betamax.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/fo-real.svg)](https://forthebadge.com)
-[![forthebadge](https://forthebadge.com/images/badges/kinda-sfw.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/open-source.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/kinda-sfw.svg)](https://forthebadge.com)
 
 Arcadian is the platform for accelerating private equity due diligence. At it's core, it has a centralized data repository integrated with large language models for semantic search and contract analysis. It ingests raw data from third party sources such as Stripe, Google Play Store and App Store and transforms them into real time metrics such as recurring revenue, churn, cash runway, and burn multiple etc. This ensures that investors have a comprehensive understanding of the financial health and potential of the target company during the buyout. Arcadian goes beyond financial data. It also ingests data such as customer reviews and social media engagement metrics, and thereby provides market feedback for better decision-making.
 
