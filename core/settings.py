@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 from pathlib import Path
 from datetime import timedelta
 
@@ -204,6 +206,8 @@ CHANNEL_LAYERS = {
     },
 }
 
+# Cache Configuration
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -216,3 +220,18 @@ CACHES = {
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 CACHE_TTL = 60 * 1
+
+# Sentry Configration
+
+sentry_sdk.init(
+    dsn=os.environ.get("SENTRY_DSN"),
+    traces_sample_rate=1.0,
+    integrations=[
+        DjangoIntegration(
+            transaction_style="url",
+            middleware_spans=True,
+            signals_spans=False,
+            cache_spans=False,
+        ),
+    ],
+)
