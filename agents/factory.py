@@ -29,7 +29,6 @@ class AgentFactory:
     async def create_agent(
         self,
         conversation_id,
-        index_name,
         max_iterations=5,
         streaming_enabled=False,
         multihop_disabled=False,
@@ -47,6 +46,9 @@ class AgentFactory:
         memory = await self.load_memory(conversation_id)
 
         # preparing the index
+        document = conversation.document
+
+        index_name = f"index_doc_{document.id}"
         if index_name not in pinecone.list_indexes():
             docsearch = pinecone.create_index(
                 index_name=index_name,
@@ -68,7 +70,6 @@ class AgentFactory:
 
         # fetch document discription
         conversation = Conversation.objects.get(id=conversation_id)
-        document = conversation.document
         document_name = document.name
         folder_tags = document.folder.tags.all()
         # compose chains as tools
