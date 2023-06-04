@@ -3,11 +3,6 @@ from converse.models import Conversation, Message
 from converse.serializers import MessageSerializer, ConversationSerializer
 
 
-class ConversationViewset(viewsets.ReadOnlyModelViewSet):
+class ConversationViewset(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
-
-
-class MessageViewset(viewsets.ModelViewSet):
-    queryset = Message.objects.all()
-    serializer_class = MessageSerializer
